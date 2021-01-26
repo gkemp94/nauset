@@ -55,6 +55,7 @@ Metadata:
       or in the "license" file accompanying this file. This file is distributed on an "AS IS"
       BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
       License for the specific language governing permissions and limitations under the License.'
+
 Outputs:
   autoScalingGroup:
     Description: The autoScalingGroup
@@ -78,10 +79,6 @@ Outputs:
     Description: Public subnet 2
     Value:
       Ref: publicSubnet2
-  s3BucketId:
-    Description: The S3 bucket ID
-    Value:
-      Ref: s3Bucket
   sqsQueueArn:
     Description: The SQS queue ARN
     Value:
@@ -123,6 +120,10 @@ Resources:
     - publicSubnet1
     - publicSubnet2
     - autoScalingServiceLinkedRole
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
     Properties:
       DesiredCapacity:
         Ref: desiredCapacity
@@ -137,18 +138,15 @@ Resources:
           OnDemandPercentageAboveBaseCapacity: 0
           SpotAllocationStrategy: capacity-optimized
         LaunchTemplate:
+          Overrides:
+            - InstanceType: m5.large
           LaunchTemplateSpecification:
             LaunchTemplateId:
-              Ref: launchTemplate
-            Version: 1
-          Overrides:
-          - InstanceType: t3.large
-          - InstanceType: c4.large
-          - InstanceType: c5.large
-          - InstanceType: m4.large
-          - InstanceType: m5.large
-          - InstanceType: r4.large
-          - InstanceType: r5.large
+              Ref: launchTemplate              
+            Version:
+              Fn::GetAtt:
+                - launchTemplate
+                - LatestVersionNumber
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -202,7 +200,6 @@ Resources:
   instanceRole:
     DependsOn:
     - sqsQueue
-    - s3Bucket
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -248,21 +245,6 @@ Resources:
             - cloudWatchLogsPolicy
       - PolicyDocument:
           Statement:
-          - Action: s3:ListBucket
-            Effect: Allow
-            Resource:
-            - Fn::Join:
-              - ''
-              - - 'arn:aws:s3:::'
-                - Ref: s3Bucket
-          Version: '2012-10-17'
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - s3BucketListPolicy
-      - PolicyDocument:
-          Statement:
           - Action: ec2:DescribeTags
             Effect: Allow
             Resource: '*'
@@ -272,25 +254,6 @@ Resources:
           - '-'
           - - Ref: AWS::StackName
             - ec2DescribeTagsPolicy
-      - PolicyDocument:
-          Statement:
-          - Action:
-            - s3:PutObject*
-            - s3:GetObject
-            - s3:DeleteObject
-            Effect: Allow
-            Resource:
-            - Fn::Join:
-              - ''
-              - - 'arn:aws:s3:::'
-                - Ref: s3Bucket
-                - /*
-          Version: '2012-10-17'
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - s3BucketReadWritePolicy
       - PolicyDocument:
           Statement:
           - Action:
@@ -312,11 +275,12 @@ Resources:
   launchTemplate:
     DependsOn:
     - instanceProfile
-    - s3Bucket
     - sqsQueue
     - cloudWatchLogsGroup
     Properties:
       LaunchTemplateData:
+        Monitoring:
+          Enabled: true
         IamInstanceProfile:
           Arn:
             Fn::GetAtt:
@@ -339,9 +303,9 @@ Resources:
 
               yum -y install git
 
-              cd /root && git clone https://github.com/awslabs/ec2-spot-labs.git
+              cd /root && git clone https://github.com/gkemp94/nauset.git
 
-              REGION=${AWS::Region} S3BUCKET=${s3Bucket} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
+              REGION=${AWS::Region} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
               bash /root/ec2-spot-labs/sqs-ec2-spot-asg/user-data.sh
 
               '
@@ -445,19 +409,6 @@ Resources:
       SubnetId:
         Ref: publicSubnet2
     Type: AWS::EC2::SubnetRouteTableAssociation
-  s3Bucket:
-    DependsOn:
-    - sqsQueue
-    - sqsQueuePolicy
-    Properties:
-      NotificationConfiguration:
-        QueueConfigurations:
-        - Event: s3:ObjectCreated:*
-          Queue:
-            Fn::GetAtt:
-            - sqsQueue
-            - Arn
-    Type: AWS::S3::Bucket
   sqsQueue:
     Properties:
       VisibilityTimeout: 900

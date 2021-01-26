@@ -11,15 +11,15 @@ yum -y install \
   awslogs jq
 
 # Install Google Chrome
-curl https://intoli.com/install-google-chrome.sh | bash
+# curl https://intoli.com/install-google-chrome.sh | bash
 
 # Install Node
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-. ~/.nvm/nvm.sh
-nvm install 14
+# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+# . ~/.nvm/nvm.sh
+# nvm install 14
 
 # Install Lighthouse Globally
-npm install lighthouse -g
+# npm install lighthouse -g
 
 aws configure set default.region $REGION
 
