@@ -25,6 +25,7 @@ aws configure set default.region $REGION
 # Copy Over Worker Services & Scripts to bin
 cp -av $WORKING_DIR/awslogs.conf /etc/awslogs/
 # cp -av $WORKING_DIR/spot-instance-interruption-notice-handler.conf /etc/init/spot-instance-interruption-notice-handler.conf
+mkdir /etc/init
 cp -av $WORKING_DIR/convert-worker.conf /etc/init/convert-worker.conf
 # cp -av $WORKING_DIR/spot-instance-interruption-notice-handler.sh /usr/local/bin/
 cp -av $WORKING_DIR/convert-worker.sh /usr/local/bin
@@ -39,7 +40,9 @@ sed -i "s|%REGION%|$REGION|g" /usr/local/bin/convert-worker.sh
 sed -i "s|%S3BUCKET%|$S3BUCKET|g" /usr/local/bin/convert-worker.sh
 sed -i "s|%SQSQUEUE%|$SQSQUEUE|g" /usr/local/bin/convert-worker.sh
 
-chkconfig awslogs on && service awslogs restart
+# Start Logging Service
+systemctl start awslogsd
+# chkconfig awslogs on && service awslogs restart
 
 # start spot-instance-interruption-notice-handler
-start convert-worker
+systemctl start convert-worker
