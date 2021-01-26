@@ -16,6 +16,7 @@ while sleep 5; do
     continue
   fi
   
+  # TODO: Reimplement this check
   # if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
   #  logger "$0: Spot instance interruption notice detected."
   #  sleep 120
@@ -26,8 +27,9 @@ while sleep 5; do
   RECEIPT=$(echo "$JSON" | jq -r '.Messages[0] | .ReceiptHandle')
   BODY=$(echo "$JSON" | jq -r '.Messages[0] | .Body')
 
+  # TODO: If no receipt or no message 
   if [ -z "$RECEIPT" ]; then
-    logger "$0: Empty receipt. Something went wrong."
+    logger "$0: [ERROR] Empty receipt. Something went wrong."
     continue
   fi
 
@@ -47,18 +49,18 @@ while sleep 5; do
 
   lighthouse $DOMAIN --chrome-flags="--headless --no-sandbox" --skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot --output=json --output-path=output.json
 
-  logger "$0: Running: curl -d @output.json -H 'Content-Type: application/json' $CALLBACK"
+  # If Response Not Error
 
   curl -d @output.json -H 'Content-Type: application/json' $CALLBACK
   
   rm output.json
 
   logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
-
   aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
 
-  logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in"
+  # End If Response
 
+  logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in"
   aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in
 
 done

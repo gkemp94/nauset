@@ -1,7 +1,5 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
-  based on SQS queue depth
 Mappings:
   CidrMappings:
     vpc:
@@ -9,9 +7,7 @@ Mappings:
   amazonLinuxAmi:
     us-east-1:
       AMI: ami-0be2609ba883822ec
-Metadata:
-  Author:
-    Description: George Kemp <georgekemp94@gmail.com
+      
 Outputs:
   autoScalingGroup:
     Description: The autoScalingGroup
