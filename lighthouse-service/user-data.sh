@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-WORKING_DIR=/root/lighthouse-service
+WORKING_DIR=/root/nauset/lighthouse-service
 
 yum -y --security update
 
@@ -14,9 +14,8 @@ yum -y install \
 curl https://intoli.com/install-google-chrome.sh | bash
 
 # Install Node
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-. ~/.nvm/nvm.sh
-nvm install 14
+curl --silent --location https://rpm.nodesource.com/setup_14.x | sudo bash -
+sudo yum install -y nodejs
 
 # Install Lighthouse Globally
 npm install lighthouse -g
