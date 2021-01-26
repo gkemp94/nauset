@@ -17,8 +17,9 @@ while sleep 5; do
     continue
   fi
   
-  curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action
-
+  $CURL_RESULT = curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action
+  logger "Curl Result: $CURL_RESULT"
+  
   # if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
   #  logger "$0: Spot instance interruption notice detected."
   #  sleep 120
@@ -42,53 +43,24 @@ while sleep 5; do
   OBJECTID=$(echo "$BODY" | jq -r '.Records[0] | .objectId')
   CALLBACK=$(echo "$BODY" | jq -r '.Records[0] | .callback')
 
-  # INPUT=$(echo "$BODY" | jq -r '.Records[0] | .s3.object.key')
-  # FNAME=$(echo $INPUT | rev | cut -f2 -d"." | rev | tr '[:upper:]' '[:lower:]')
-  # FEXT=$(echo $INPUT | rev | cut -f1 -d"." | rev | tr '[:upper:]' '[:lower:]')
+  logger "$0: Found work to convert. Details: INPUT=$INPUT, FNAME=$FNAME, FEXT=$FEXT"
 
-  if [ "$FEXT" = "jpg" -o "$FEXT" = "png" -o "$FEXT" = "gif" ]; then
+  logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in"
 
-    logger "$0: Found work to convert. Details: INPUT=$INPUT, FNAME=$FNAME, FEXT=$FEXT"
+  aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
 
-    logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in"
+  # Produce Lighthouse Report
+  REPORT=$(lighthouse $DOMAIN --headless --no-sandbox --output=json)
 
-    aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
+  # Post to Callback URL
+  curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK
 
-    # Produce Lighthouse Report
-    REPORT=$(lighthouse $DOMAIN --headless --no-sandbox --output=json)
+  logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
 
-    # Post to Callback URL
-    curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK
+  aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
 
-    # aws s3 cp s3://$S3BUCKET/$INPUT /tmp
+  logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in"
 
-    # convert /tmp/$INPUT /tmp/$FNAME.pdf
-
-    # logger "$0: Convert done. Copying to S3 and cleaning up"
-
-    # logger "$0: Running: aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET"
-
-    # aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET
-
-    # rm -f /tmp/$INPUT /tmp/$FNAME.pdf
-
-    # pretend to do work for 60 seconds in order to catch the scale in protection
-    # sleep 60
-
-    logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
-
-    aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
-
-    logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in"
-
-    aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in
-
-  else
-
-    logger "$0: Skipping message - file not of type jpg, png, or gif. Deleting message from queue"
-
-    aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
-
-  fi
+  aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in
 
 done
