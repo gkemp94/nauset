@@ -35,9 +35,9 @@ while sleep 5; do
 
   logger "$0: Found $MESSAGES messages in $SQSQUEUE. Details: JSON=$JSON, RECEIPT=$RECEIPT, BODY=$BODY"
 
-  DOMAIN=$(echo "$BODY" | jq -r '.Records[0] | .domain')
-  OBJECTID=$(echo "$BODY" | jq -r '.Records[0] | .objectId')
-  CALLBACK=$(echo "$BODY" | jq -r '.Records[0] | .callback')
+  DOMAIN=$(echo "$BODY" | jq -r '.Messages[0] | .domain')
+  OBJECTID=$(echo "$BODY" | jq -r '.Messages[0] | .objectId')
+  CALLBACK=$(echo "$BODY" | jq -r '.Messages[0] | .callback')
 
   logger "$0: Found domain to audit. Details: DOMAIN=$DOMAIN, CALLBACK=$CALLBACK"
 
