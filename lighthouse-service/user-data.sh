@@ -29,7 +29,7 @@ cp -av $WORKING_DIR/convert-worker.conf /etc/init/convert-worker.conf
 # cp -av $WORKING_DIR/spot-instance-interruption-notice-handler.sh /usr/local/bin/
 cp -av $WORKING_DIR/convert-worker.sh /usr/local/bin
 
-chmod +x /usr/local/bin/spot-instance-interruption-notice-handler.sh
+# chmod +x /usr/local/bin/spot-instance-interruption-notice-handler.sh
 chmod +x /usr/local/bin/convert-worker.sh
 
 # Populate Worker Scripts w/ Variables
