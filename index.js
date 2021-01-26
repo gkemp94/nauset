@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' } ));
 
 app.post('*', (req, res) => {
   const body = req.body;
