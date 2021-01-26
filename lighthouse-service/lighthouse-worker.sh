@@ -43,13 +43,15 @@ while sleep 5; do
 
   aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
 
-  logger "$0: Running: lighthouse $CALLBACK?objectId=$OBJECTID --headless --no-sandbox --output=json --verbose --output-path=stdout"
+  logger "$0: Running: lighthouse $CALLBACK?objectId=$OBJECTID --headless --no-sandbox --output=json --verbose --output-path=/tmp/output.json"
 
-  REPORT=$(lighthouse $DOMAIN --chrome-flags="--headless --no-sandbox" --output=json --output-path=stdout)
+  REPORT=$(lighthouse $DOMAIN --chrome-flags="--headless --no-sandbox" --output=json --output-path=output.json)
 
   logger "$0: Running: curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK"
 
-  curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK
+  curl -d @output.json -H 'Content-Type: application/json' $CALLBACK
+  
+  rm output.json
 
   logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
 
