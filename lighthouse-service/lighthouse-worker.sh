@@ -45,7 +45,7 @@ while sleep 5; do
 
   logger "$0: Running: lighthouse $CALLBACK?objectId=$OBJECTID --headless --no-sandbox --output=json --verbose --output-path=/tmp/output.json"
 
-  REPORT=$(lighthouse $DOMAIN --chrome-flags="--headless --no-sandbox" --output=json --output-path=output.json)
+  lighthouse $DOMAIN --chrome-flags="--headless --no-sandbox" --skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot --output=json --output-path=output.json
 
   logger "$0: Running: curl -d @output.json -H 'Content-Type: application/json' $CALLBACK"
 

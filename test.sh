@@ -1,0 +1,1 @@
+  REPORT=$(npx lighthouse https://hubspot.com --chrome-flags="--headless --no-sandbox"  --skip-audits=full-page-screenshot,screenshot-thumbnails,final-screenshot --output=json --output-path=output.json)
