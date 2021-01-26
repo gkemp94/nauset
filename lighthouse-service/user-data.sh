@@ -33,5 +33,7 @@ cp -av $WORKING_DIR/lighthouse-worker.sh /usr/local/bin
 sed -i "s|%REGION%|$REGION|g" /usr/local/bin/lighthouse-worker.sh
 sed -i "s|%SQSQUEUE%|$SQSQUEUE|g" /usr/local/bin/lighthouse-worker.sh
 
+
+# TODO: This needs to be improved so if it fails/crashes it will recover
 chmod +x /usr/local/bin/lighthouse-worker.sh
 exec /usr/local/bin/lighthouse-worker.sh
