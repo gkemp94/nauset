@@ -38,4 +38,4 @@ chmod +x /usr/local/bin/lighthouse-worker.sh
 sed -i "s|%REGION%|$REGION|g" /usr/local/bin/lighthouse-worker.sh
 sed -i "s|%SQSQUEUE%|$SQSQUEUE|g" /usr/local/bin/lighthouse-worker.sh
 
-start systemctl enable $WORKING_DIR/lighthouse.service
+systemctl start $WORKING_DIR/lighthouse.service
