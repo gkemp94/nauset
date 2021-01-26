@@ -7,40 +7,8 @@ Mappings:
     vpc:
       CIDR: 10.0.0.0/16
   amazonLinuxAmi:
-    ap-northeast-1:
-      AMI: ami-0c3fd0f5d33134a76
-    ap-northeast-2:
-      AMI: ami-095ca789e0549777d
-    ap-northeast-3:
-      AMI: ami-0ee933a7f81beb045
-    ap-south-1:
-      AMI: ami-0d2692b6acea72ee6
-    ap-southeast-1:
-      AMI: ami-01f7527546b557442
-    ap-southeast-2:
-      AMI: ami-0dc96254d5535925f
-    ca-central-1:
-      AMI: ami-0d4ae09ec9361d8ac
-    eu-central-1:
-      AMI: ami-0cc293023f983ed53
-    eu-north-1:
-      AMI: ami-3f36be41
-    eu-west-1:
-      AMI: ami-0bbc25e23a7640b9b
-    eu-west-2:
-      AMI: ami-0d8e27447ec2c8410
-    eu-west-3:
-      AMI: ami-0adcddd3324248c4c
-    sa-east-1:
-      AMI: ami-058943e7d9b9cabfb
     us-east-1:
-      AMI: ami-0b898040803850657
-    us-east-2:
-      AMI: ami-0d8f6eb4f641ef691
-    us-west-1:
-      AMI: ami-056ee704806822732
-    us-west-2:
-      AMI: ami-082b5a644766e0e6f
+      AMI: ami-0be2609ba883822ec
 Metadata:
   Author:
     Description: George Kemp <georgekemp94@gmail.com
