@@ -306,7 +306,7 @@ Resources:
               cd /root && git clone https://github.com/gkemp94/nauset.git
 
               REGION=${AWS::Region} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
-              bash /root/ec2-spot-labs/sqs-ec2-spot-asg/user-data.sh
+              bash /root/lighthouse-service/user-data.sh
 
               '
     Type: AWS::EC2::LaunchTemplate
