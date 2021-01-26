@@ -16,11 +16,11 @@ while sleep 5; do
     continue
   fi
   
-  if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
-   logger "$0: Spot instance interruption notice detected."
-   sleep 120
-   continue
-  fi
+  # if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
+  #  logger "$0: Spot instance interruption notice detected."
+  #  sleep 120
+  #  continue
+  # fi
 
   JSON=$(aws sqs --output=json receive-message --queue-url $SQSQUEUE --max-number-of-messages 1 --wait-time-seconds 10)
   RECEIPT=$(echo "$JSON" | jq -r '.Messages[] | .ReceiptHandle')
