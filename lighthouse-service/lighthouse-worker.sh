@@ -27,10 +27,8 @@ while sleep 5; do
   BODY=$(echo "$JSON" | jq -r '.Messages[] | .Body')
 
   if [ -z "$RECEIPT" ]; then
-
     logger "$0: Empty receipt. Something went wrong."
     continue
-
   fi
 
   logger "$0: Found $MESSAGES messages in $SQSQUEUE. Details: JSON=$JSON, RECEIPT=$RECEIPT, BODY=$BODY"
@@ -47,7 +45,7 @@ while sleep 5; do
 
   logger "$0: Running: lighthouse $DOMAIN --headless --no-sandbox --output=json --verbose"
 
-  REPORT=$(lighthouse $DOMAIN   --chrome-flags="--headless --no-sandbox" --output=json)
+  REPORT=$(lighthouse $DOMAIN --output=json --chrome-flags="--headless --no-sandbox" --output=json)
 
   logger "$0: Running: curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK"
 
