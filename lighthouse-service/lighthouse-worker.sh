@@ -2,7 +2,6 @@
 
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 REGION=%REGION%
-# S3BUCKET=%S3BUCKET%
 SQSQUEUE=%SQSQUEUE%
 AUTOSCALINGGROUP=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID" "Name=key,Values=aws:autoscaling:groupName" | jq -r '.Tags[0].Value')
 
@@ -17,14 +16,11 @@ while sleep 5; do
     continue
   fi
   
-  $CURL_RESULT = curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action
-  logger "Curl Result: $CURL_RESULT"
-  
-  # if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
-  #  logger "$0: Spot instance interruption notice detected."
-  #  sleep 120
-  #  continue
-  # fi
+  if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
+   logger "$0: Spot instance interruption notice detected."
+   sleep 120
+   continue
+  fi
 
   JSON=$(aws sqs --output=json receive-message --queue-url $SQSQUEUE --max-number-of-messages 1 --wait-time-seconds 10)
   RECEIPT=$(echo "$JSON" | jq -r '.Messages[] | .ReceiptHandle')
@@ -43,16 +39,18 @@ while sleep 5; do
   OBJECTID=$(echo "$BODY" | jq -r '.Records[0] | .objectId')
   CALLBACK=$(echo "$BODY" | jq -r '.Records[0] | .callback')
 
-  logger "$0: Found work to convert. Details: INPUT=$INPUT, FNAME=$FNAME, FEXT=$FEXT"
+  logger "$0: Found domain to audit. Details: DOMAIN=$DOMAIN, CALLBACK=$CALLBACK"
 
   logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in"
 
   aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
 
-  # Produce Lighthouse Report
-  REPORT=$(lighthouse $DOMAIN --headless --no-sandbox --output=json)
+  logger "$0: Running: lighthouse $DOMAIN --headless --no-sandbox --output=json --verbose"
 
-  # Post to Callback URL
+  REPORT=$(lighthouse $DOMAIN   --chrome-flags="--headless --no-sandbox" --output=json)
+
+  logger "$0: Running: curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK"
+
   curl -d $REPORT -H 'Content-Type: application/json' $CALLBACK
 
   logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
