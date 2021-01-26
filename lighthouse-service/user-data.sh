@@ -26,16 +26,12 @@ yum install -y nodejs
 # Install Lighthouse
 npm install lighthouse -g
 
-# mkdir /etc/init
-# cp -av $WORKING_DIR/convert-worker.conf /etc/init/convert-worker.conf
-
 # Copy Bash Script to Bin
 cp -av $WORKING_DIR/lighthouse-worker.sh /usr/local/bin
-
-chmod +x /usr/local/bin/lighthouse-worker.sh
 
 # Populate Worker Scripts w/ Variables
 sed -i "s|%REGION%|$REGION|g" /usr/local/bin/lighthouse-worker.sh
 sed -i "s|%SQSQUEUE%|$SQSQUEUE|g" /usr/local/bin/lighthouse-worker.sh
 
-systemctl start $WORKING_DIR/lighthouse.service
+chmod +x /usr/local/bin/lighthouse-worker.sh
+exec /usr/local/bin/lighthouse-worker.sh
