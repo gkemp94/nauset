@@ -45,4 +45,4 @@ systemctl start awslogsd
 # chkconfig awslogs on && service awslogs restart
 
 # start spot-instance-interruption-notice-handler
-systemctl start convert-worker
+start convert-worker
