@@ -16,6 +16,8 @@ while sleep 5; do
   if [ $MESSAGES -eq 0 ]; then
     continue
   fi
+  
+  curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action)
 
   # if [ -n $(curl -Isf http://169.254.169.254/latest/meta-data/spot/instance-action) ]; then
   #  logger "$0: Spot instance interruption notice detected."
