@@ -23,8 +23,8 @@ while sleep 5; do
   # fi
 
   JSON=$(aws sqs --output=json receive-message --queue-url $SQSQUEUE --max-number-of-messages 1 --wait-time-seconds 10)
-  RECEIPT=$(echo "$JSON" | jq -r '.Messages[] | .ReceiptHandle')
-  BODY=$(echo "$JSON" | jq -r '.Messages[] | .Body')
+  RECEIPT=$(echo "$JSON" | jq -r '.Messages[0] | .ReceiptHandle')
+  BODY=$(echo "$JSON" | jq -r '.Messages[0] | .Body')
 
   if [ -z "$RECEIPT" ]; then
     logger "$0: Empty receipt. Something went wrong."
@@ -33,9 +33,9 @@ while sleep 5; do
 
   logger "$0: Found $MESSAGES messages in $SQSQUEUE. Details: JSON=$JSON, RECEIPT=$RECEIPT, BODY=$BODY"
 
-  DOMAIN=$(echo "$BODY" | jq -r '.Messages[0] | .domain')
-  OBJECTID=$(echo "$BODY" | jq -r '.Messages[0] | .objectId')
-  CALLBACK=$(echo "$BODY" | jq -r '.Messages[0] | .callback')
+  DOMAIN=$(echo "$BODY" | jq -r '.domain')
+  OBJECTID=$(echo "$BODY" | jq -r '.objectId')
+  CALLBACK=$(echo "$BODY" | jq -r '.callback')
 
   logger "$0: Found domain to audit. Details: DOMAIN=$DOMAIN, CALLBACK=$CALLBACK"
 
@@ -43,7 +43,7 @@ while sleep 5; do
 
   aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
 
-  logger "$0: Running: lighthouse $DOMAIN --headless --no-sandbox --output=json --verbose"
+  logger "$0: Running: lighthouse $CALLBACK?objectId=$OBJECTID --headless --no-sandbox --output=json --verbose"
 
   REPORT=$(lighthouse $DOMAIN --output=json --chrome-flags="--headless --no-sandbox" --output=json)
 
